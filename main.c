@@ -11,17 +11,24 @@ struct Piece{
 };
 
 void initPiece(Piece * piece, SDL_Rect * imageDecoupe, SDL_Rect * screenRect, int entierAngle){
+    /* Découpe un rectangle (imageDecoupe) de l'image et l'associe a 
+    un rectangle de l'écran (screenRect) avec une rotation de
+    entierAngle*90 degrés */
+
     piece->imageDecoupe = *imageDecoupe; // === (*piece).imageDecoupe.x
     piece->screenRect = *screenRect;
     piece->angle = entierAngle*90; // entierAngle appartient à {0,1,2,3}
 }
 
 void renderPieceTexture(Piece * piece, SDL_Texture * texture, SDL_Renderer * renderer){
+    /* Copy sur le renderer la texture associée à la pièce */
+
     SDL_RenderCopyEx(renderer, texture,  &piece->imageDecoupe, &piece->screenRect, piece->angle, NULL, SDL_FLIP_NONE);
 }
 
-
 void shuffleList(int liste[16]){
+    /* Créer une permutation aléatoire de la liste donnée en paramètre */
+    
     for(int i=0; i <10; i=i+1){
         // on effectue des swaps
         for(int j=0; j<16; j=j+1){
@@ -34,6 +41,8 @@ void shuffleList(int liste[16]){
 }
 
 void createPuzzle(int liste[16], SDL_Texture * texture, SDL_Renderer * renderer){
+    /*  */
+
     for(int i=0; i<16; i++){
         Piece piece;
         SDL_Rect imageDecoupe = { i%4*100, i/4*100, 100, 100 };
@@ -42,7 +51,6 @@ void createPuzzle(int liste[16], SDL_Texture * texture, SDL_Renderer * renderer)
         renderPieceTexture(&piece, texture, renderer);
     }
 }
-
 
 int main()
 {
@@ -103,15 +111,11 @@ int main()
         createPuzzle(liste, texture, renderer);
 
         // grille droite, de résolution
-        // SDL_SetRenderDrawColor( renderer, 180, 
-        // 0, 0, 100); 
         SDL_Rect rect;
         rect.x = 460;
         rect.y = 25;
         rect.w = 400;
         rect.h = 400; 
-        // SDL_RenderFillRect( renderer, &rect);
-
         SDL_RenderCopy(renderer, texture,  NULL, &rect);
 
 
