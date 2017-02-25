@@ -34,8 +34,14 @@ void shuffleList(int liste[16]){
     }
 }
 
-void createPuzzle(int liste[16]){
-
+void createPuzzle(int liste[16], SDL_Texture * texture, SDL_Renderer * renderer){
+    for(int i=0; i<16; i++){
+        Piece piece;
+        SDL_Rect imageDecoupe = { i%4*100, i/4*100, 100, 100 };
+        SDL_Rect screenRect = { liste[i]%4*100, liste[i]/4*100, 100, 100 };
+        initPiece(&piece, &imageDecoupe, &screenRect, rand() % 4);
+        renderPieceTexture(&piece, texture, renderer);
+    }
 }
 
 
@@ -97,20 +103,7 @@ int main()
             liste[i] = i;
         }
         shuffleList(liste);
-
-
-        
-        for(int j =0; j <16;j=j+1){
-            printf("(%d,", liste[j]/4 );
-            printf("%d) ", liste[j]%4 );
-        }
-        printf("\n");
-
-        Piece piece;
-        SDL_Rect imageDecoupe = { 150, 0, 100, 100 };
-        SDL_Rect screenRect = { 200, 200, 100, 100 };
-        initPiece(&piece, &imageDecoupe, &screenRect, rand() % 4);
-        renderPieceTexture(&piece, texture, renderer);
+        createPuzzle(liste, texture, renderer);
 
         SDL_RenderPresent(renderer);
         SDL_Delay(4000);
