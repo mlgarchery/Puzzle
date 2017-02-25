@@ -1,8 +1,7 @@
 // #include <stdio.h>
-#include <SDL.h>
-
-#include <stdbool.h>
 // #include <math.h>
+#include <SDL.h>
+#include <stdbool.h>
     
 typedef struct Piece Piece;
 struct Piece{
@@ -14,7 +13,7 @@ struct Piece{
 void initPiece(Piece * piece, SDL_Rect * imageDecoupe, SDL_Rect * screenRect, int entierAngle){
     piece->imageDecoupe = *imageDecoupe; // === (*piece).imageDecoupe.x
     piece->screenRect = *screenRect;
-    piece->angle = entierAngle*90; // entierAngle appartient à [|0,3|]
+    piece->angle = entierAngle*90; // entierAngle appartient à {0,1,2,3}
 }
 
 void renderPieceTexture(Piece * piece, SDL_Texture * texture, SDL_Renderer * renderer){
@@ -38,7 +37,7 @@ void createPuzzle(int liste[16], SDL_Texture * texture, SDL_Renderer * renderer)
     for(int i=0; i<16; i++){
         Piece piece;
         SDL_Rect imageDecoupe = { i%4*100, i/4*100, 100, 100 };
-        SDL_Rect screenRect = { liste[i]%4*100, liste[i]/4*100, 100, 100 };
+        SDL_Rect screenRect = { 40+ liste[i]%4*100, 25 + liste[i]/4*100, 100, 100 };
         initPiece(&piece, &imageDecoupe, &screenRect, rand() % 4);
         renderPieceTexture(&piece, texture, renderer);
     }
@@ -47,15 +46,13 @@ void createPuzzle(int liste[16], SDL_Texture * texture, SDL_Renderer * renderer)
 
 int main()
 {
-
-
     bool quit = false;
     SDL_Event event;
  
     SDL_Init(SDL_INIT_VIDEO);
  
     int size_x= 900;
-    int size_y= 500;
+    int size_y= 450;
     SDL_Window * window = SDL_CreateWindow("Puzzle", 100, 100, size_x, size_y, SDL_WINDOW_SHOWN);
     if (window == NULL){
         printf( "SDL_CreateWindow Error: %s\n", SDL_GetError() );
@@ -97,7 +94,7 @@ int main()
                 break;
         }
 
-
+        // Création du puzzle (grille gauche)
         int liste[16];
         for(int i=0; i<16; i=i+1){
             liste[i] = i;
@@ -105,14 +102,23 @@ int main()
         shuffleList(liste);
         createPuzzle(liste, texture, renderer);
 
+        // grille droite, de résolution
+        // SDL_SetRenderDrawColor( renderer, 180, 
+        // 0, 0, 100); 
+        SDL_Rect rect;
+        rect.x = 460;
+        rect.y = 25;
+        rect.w = 400;
+        rect.h = 400; 
+        // SDL_RenderFillRect( renderer, &rect);
+
+        SDL_RenderCopy(renderer, texture,  NULL, &rect);
+
+
         SDL_RenderPresent(renderer);
         SDL_Delay(4000);
     }
 
-
-
-
- 
     SDL_DestroyTexture(texture);
     SDL_FreeSurface(image);
     SDL_DestroyRenderer(renderer);
@@ -122,9 +128,6 @@ int main()
  
     return 0;
 }
-
-
-
 
 
 // SDL_Surface* pieceSurface = SDL_CreateRGBSurface(SDL_SWSURFACE, largeurDecoupe, hauteurDecoupe, 32, 0, 0, 0, 0 );
