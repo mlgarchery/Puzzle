@@ -8,27 +8,41 @@ typedef struct Piece Piece;
 struct Piece{
     SDL_Rect imageDecoupe;
     SDL_Rect screenRect;
-    SDL_Point center;
     int angle; 
 };
 
 void initPiece(Piece * piece, SDL_Rect * imageDecoupe, SDL_Rect * screenRect, int entierAngle){
     piece->imageDecoupe = *imageDecoupe; // === (*piece).imageDecoupe.x
     piece->screenRect = *screenRect;
-    piece->center.x = screenRect->x + screenRect->w/2;
-    piece->center.x = screenRect->y + screenRect->h/2;
     piece->angle = entierAngle*90; // entierAngle appartient à [|0,3|]
 }
 
 void renderPieceTexture(Piece * piece, SDL_Texture * texture, SDL_Renderer * renderer){
-    SDL_RenderCopyEx(renderer, texture,  &piece->imageDecoupe, &piece->screenRect, piece->angle, &piece->center, SDL_FLIP_NONE);
-    SDL_RenderPresent(renderer);
+    SDL_RenderCopyEx(renderer, texture,  &piece->imageDecoupe, &piece->screenRect, piece->angle, NULL, SDL_FLIP_NONE);
 }
 
+
+void shuffleList(int liste[16]){
+    for(int i=0; i <10; i=i+1){
+        // on effectue des swaps
+        for(int j=0; j<16; j=j+1){
+            int entierAleatoire = rand() % 16;
+            int stockvalue = liste[entierAleatoire];
+            liste[entierAleatoire] = liste[j];
+            liste[j]= stockvalue;
+        }
+    }
+}
+
+void createPuzzle(int liste[16]){
+
+}
 
 
 int main()
 {
+
+
     bool quit = false;
     SDL_Event event;
  
@@ -51,6 +65,7 @@ int main()
         return 1;
     }
 
+    // On charge l'image
     SDL_Surface * image = SDL_LoadBMP("images/0/slardar.bmp");
     if (image == NULL){
         printf( "SDL_LoadBMP Error: %s\n", SDL_GetError() );
@@ -59,10 +74,7 @@ int main()
 
         return 1;
     }
-
-    int hauteurDecoupe = 100;
-    int largeurDecoupe = 100;
-
+    // On crée une texture avec cette image
     SDL_Texture * texture = SDL_CreateTextureFromSurface(renderer, image);
 
     SDL_SetRenderDrawColor( renderer, 0, 0, 0, 255);
@@ -78,28 +90,30 @@ int main()
                 quit = true;
                 break;
         }
- 
-        SDL_Rect imageDecoupe = { 100, 0, largeurDecoupe, hauteurDecoupe };
-        SDL_Rect dstrect = { 0, 0, largeurDecoupe, hauteurDecoupe };
 
-        SDL_RenderCopy(renderer, texture, &imageDecoupe, &dstrect);
-        SDL_RenderPresent(renderer);
 
-        SDL_Delay(80);
-        SDL_RenderClear(renderer);  
-
-        SDL_Point center = {50, 50};
-        int rotationRetour =  SDL_RenderCopyEx(renderer, texture,  &imageDecoupe, &dstrect, 180, &center, SDL_FLIP_NONE);
-        if (rotationRetour < 0){
-            printf( " SDL_RenderCopyEx Error: %s\n", SDL_GetError() );
-            SDL_DestroyWindow(window);
-            SDL_Quit();
-            return 1;
+        int liste[16];
+        for(int i=0; i<16; i=i+1){
+            liste[i] = i;
         }
+        shuffleList(liste);
+
+
+        
+        for(int j =0; j <16;j=j+1){
+            printf("(%d,", liste[j]/4 );
+            printf("%d) ", liste[j]%4 );
+        }
+        printf("\n");
+
+        Piece piece;
+        SDL_Rect imageDecoupe = { 150, 0, 100, 100 };
+        SDL_Rect screenRect = { 200, 200, 100, 100 };
+        initPiece(&piece, &imageDecoupe, &screenRect, rand() % 4);
+        renderPieceTexture(&piece, texture, renderer);
 
         SDL_RenderPresent(renderer);
-        SDL_Delay(80);
-
+        SDL_Delay(4000);
     }
 
 
