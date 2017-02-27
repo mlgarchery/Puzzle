@@ -58,6 +58,11 @@ int main()
     SDL_Event event;
  
     SDL_Init(SDL_INIT_VIDEO);
+
+    SDL_DisplayMode DM;
+    SDL_GetCurrentDisplayMode(0, &DM);
+    printf("%d\n", DM.w);
+    printf("%d\n", DM.h );
  
     int size_x= 900;
     int size_y= 450;
@@ -132,28 +137,3 @@ int main()
  
     return 0;
 }
-
-
-// SDL_Surface* pieceSurface = SDL_CreateRGBSurface(SDL_SWSURFACE, largeurDecoupe, hauteurDecoupe, 32, 0, 0, 0, 0 );
-
-// SDL_Rect rectDecoupe = { 0, 0, largeurDecoupe, hauteurDecoupe };
-
-// int decoupeRetour = SDL_BlitSurface(image, &rectDecoupe , pieceSurface, NULL);
-// if (decoupeRetour < 0){
-//     printf( " SDL_BlitSurface Error: %s\n", SDL_GetError() );
-//     SDL_DestroyWindow(window);
-//     SDL_Quit();
-//     return 1;
-// }
-
-
-
-// Modifier les pixels d'un carré donné de l'image
-// SDL_Rect piece = { 0, 0, 100, 100 };
-// int decoupe = SDL_UpdateTexture(texture, &piece, const void* pixels , int pitch);
-// if (decoupe < 0){
-//     printf( " SDL_UpdateTexture Error: %s\n", SDL_GetError() );
-//     SDL_DestroyWindow(window);
-//     SDL_Quit();
-//     return 1;
-// }
