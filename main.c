@@ -17,7 +17,7 @@ void initPiece(Piece * piece, SDL_Rect * imageDecoupe, SDL_Rect * screenRect, in
 
     piece->imageDecoupe = *imageDecoupe; // === (*piece).imageDecoupe.x
     piece->screenRect = *screenRect;
-    piece->angle = entierAngle*90; // entierAngle appartient à {0,1,2,3}
+    piece->angle = (entierAngle%4)*90; // entierAngle appartient à {0,1,2,3}
 }
 
 void renderPieceTexture(Piece * piece, SDL_Texture * texture, SDL_Renderer * renderer){
@@ -169,6 +169,22 @@ int main()
 
                     if(x_souris >= x_rect && x_souris < x_rect + w_rect && y_souris >= y_rect && y_souris < y_rect + h_rect){
                         numPiece = i;
+                        etatPrecedent =0;
+                        break;
+                    }
+                }
+            }
+            if(boutons == 4){
+                for(int i=0; i<16; i++){
+                    int x_rect = listePieces[i].screenRect.x;
+                    int y_rect = listePieces[i].screenRect.y;
+                    int w_rect = listePieces[i].screenRect.w;
+                    int h_rect = listePieces[i].screenRect.h;
+
+                    printf("%d \n",x_rect );
+
+                    if(x_souris >= x_rect && x_souris < x_rect + w_rect && y_souris >= y_rect && y_souris < y_rect + h_rect){
+                        initPiece(&listePieces[i], &listePieces[i].imageDecoupe, &listePieces[i].screenRect, listePieces[i].angle + 1);
                         break;
                     }
                 }
@@ -184,7 +200,6 @@ int main()
 
         renderPuzzle(listePieces, texture, renderer);
         SDL_RenderPresent(renderer);    
-        SDL_Delay(1000);
     }
 
 
