@@ -40,30 +40,32 @@ void shuffleList(int liste[16]){
     }
 }
 
-void createPuzzle(int liste[16], SDL_Texture * texture, SDL_Renderer * renderer){
+
+
+void createPuzzle(Piece listePieces[16], int liste_permutation[16]){
     /*  */
 
     for(int i=0; i<16; i++){
         Piece piece;
         SDL_Rect imageDecoupe = { i%4*100, i/4*100, 100, 100 };
-        SDL_Rect screenRect = { 40+ liste[i]%4*100, 25 + liste[i]/4*100, 100, 100 };
+        SDL_Rect screenRect = { 40+ liste_permutation[i]%4*100, 25 + liste_permutation[i]/4*100, 100, 100 };
         initPiece(&piece, &imageDecoupe, &screenRect, rand() % 4);
-        renderPieceTexture(&piece, texture, renderer);
+        listePieces[i] = piece;
     }
+}
+
+void renderPuzzle(Piece listePieces[16], SDL_Texture * texture, SDL_Renderer * renderer){
+    for (int i = 0; i < 16; i++){
+        renderPieceTexture(&listePieces[i], texture, renderer);
+    }    
+
 }
 
 int main()
 {
     bool quit = false;
-    SDL_Event event;
  
     SDL_Init(SDL_INIT_VIDEO);
-
-    SDL_DisplayMode DM;
-    SDL_GetCurrentDisplayMode(0, &DM);
-    printf("%d\n", DM.w);
-    printf("%d\n", DM.h );
- 
     int size_x= 900;
     int size_y= 450;
     SDL_Window * window = SDL_CreateWindow("Puzzle", 100, 100, size_x, size_y, SDL_WINDOW_SHOWN);
@@ -96,37 +98,95 @@ int main()
     SDL_SetRenderDrawColor( renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
+    // Création du puzzle (grille gauche)
+    int liste_permutation[16];
+    for(int i=0; i<16; i=i+1){
+        liste_permutation[i] = i;
+    }
+    shuffleList(liste_permutation);
+
+
+    // for(int i=0;i<16; i++){
+    //     printf("%d", liste[i] );
+    // }
+    // printf("\n");
+
+    Piece listePieces[16];
+    createPuzzle(listePieces, liste_permutation);
+
+    // grille droite, de résolution
+    SDL_Rect rectDroit;
+    rectDroit.x = 460;
+    rectDroit.y = 25;
+    rectDroit.w = 400;
+    rectDroit.h = 400; 
+
+    SDL_SetRenderDrawColor( renderer, 180, 
+        255, 255, 255); 
+    SDL_RenderFillRect(renderer, &rectDroit);
+
+
+    int x_souris = -1;
+    int y_souris = -1;
+
+    int etatPrecedent =0;
     while (!quit)
     {
-        SDL_WaitEvent(&event);
- 
-        switch (event.type)
+        SDL_PumpEvents(); // On demande à./ la SDL de mettre à jour les états sur les périphériques
+
+
+        // Clavier
         {
-            case SDL_QUIT:
-                quit = true;
-                break;
+            const Uint8* pKeyStates = SDL_GetKeyboardState(NULL);
+            if ( pKeyStates[SDL_SCANCODE_ESCAPE] )
+            {
+                quit = 1;
+            }
+            if (pKeyStates[SDL_SCANCODE_RETURN]) {
+                printf("La touche entree est appuyee.");
+            }
         }
+        printf("\n");
+        // Souris
+        {
+            Uint32 boutons = SDL_GetMouseState(&x_souris,&y_souris);
 
-        // Création du puzzle (grille gauche)
-        int liste[16];
-        for(int i=0; i<16; i=i+1){
-            liste[i] = i;
+            fprintf(stdout, "Position de la souris : %d;%d\n",x_souris,y_souris);
+            fprintf(stdout, "Bouton de la souris : %d\n",boutons);
+
+            SDL_GetRelativeMouseState(&x_souris,&y_souris);
+            fprintf(stdout, "Déplacement de la souris : %d;%d\n",x_souris,y_souris);
+
+            // front montant
+            int numPiece = -1;
+            if(boutons ==1 && etatPrecedent ==0){
+
+                for(int i=0; i<16; i++){
+                    int x_rect = listePieces[i].screenRect.x;
+                    int y_rect = listePieces[i].screenRect.y;
+                    int w_rect = listePieces[i].screenRect.w;
+                    int h_rect = listePieces[i].screenRect.h;
+
+                    if(x_souris >= x_rect && x_souris < x_rect + w_rect && y_souris >= y_rect && y_souris < y_rect + h_rect){
+                        numPiece = i;
+                        break;
+                    }
+                }
+            }
+            printf("%d \n", numPiece );
+
         }
-        shuffleList(liste);
-        createPuzzle(liste, texture, renderer);
+        printf("\n");
+        /* On a traité les événements, on peut continuer le jeu */
 
-        // grille droite, de résolution
-        SDL_Rect rect;
-        rect.x = 460;
-        rect.y = 25;
-        rect.w = 400;
-        rect.h = 400; 
-        SDL_RenderCopy(renderer, texture,  NULL, &rect);
+        /* On ralentit un peu le programme */
+        // SDL_Delay(10);
 
-
-        SDL_RenderPresent(renderer);
-        SDL_Delay(4000);
+        renderPuzzle(listePieces, texture, renderer);
+        SDL_RenderPresent(renderer);    
+        SDL_Delay(1000);
     }
+
 
     SDL_DestroyTexture(texture);
     SDL_FreeSurface(image);
