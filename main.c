@@ -7,7 +7,7 @@ typedef struct Piece Piece;
 struct Piece{
     SDL_Rect imageDecoupe;
     SDL_Rect screenRect;
-    int angle; 
+    int entierAngle; 
 };
 
 void initPiece(Piece * piece, SDL_Rect * imageDecoupe, SDL_Rect * screenRect, int entierAngle){
@@ -17,13 +17,13 @@ void initPiece(Piece * piece, SDL_Rect * imageDecoupe, SDL_Rect * screenRect, in
 
     piece->imageDecoupe = *imageDecoupe; // === (*piece).imageDecoupe.x
     piece->screenRect = *screenRect;
-    piece->angle = (entierAngle%4)*90; // entierAngle appartient à {0,1,2,3}
+    piece->entierAngle = entierAngle%4; // entierAngle appartient à {0,1,2,3}
 }
 
 void renderPieceTexture(Piece * piece, SDL_Texture * texture, SDL_Renderer * renderer){
     /* Copy sur le renderer la texture associée à la pièce */
 
-    SDL_RenderCopyEx(renderer, texture,  &piece->imageDecoupe, &piece->screenRect, piece->angle, NULL, SDL_FLIP_NONE);
+    SDL_RenderCopyEx(renderer, texture,  &piece->imageDecoupe, &piece->screenRect, piece->entierAngle*90, NULL, SDL_FLIP_NONE);
 }
 
 void shuffleList(int liste[16]){
@@ -129,7 +129,8 @@ int main()
     int x_souris = -1;
     int y_souris = -1;
 
-    int etatPrecedent =0;
+    // int etatPrecedent =0;
+    int etatPrecedentRigthButton =0;
     while (!quit)
     {
         SDL_PumpEvents(); // On demande à./ la SDL de mettre à jour les états sur les périphériques
@@ -154,42 +155,47 @@ int main()
             fprintf(stdout, "Position de la souris : %d;%d\n",x_souris,y_souris);
             fprintf(stdout, "Bouton de la souris : %d\n",boutons);
 
-            SDL_GetRelativeMouseState(&x_souris,&y_souris);
-            fprintf(stdout, "Déplacement de la souris : %d;%d\n",x_souris,y_souris);
+            // SDL_GetRelativeMouseState(&x_souris,&y_souris);
+            // fprintf(stdout, "Déplacement de la souris : %d;%d\n",x_souris,y_souris);
 
             // front montant
-            int numPiece = -1;
-            if(boutons ==1 && etatPrecedent ==0){
+            // int numPiece = -1;
+            // if(boutons ==1 && etatPrecedent ==0){
 
+            //     for(int i=0; i<16; i++){
+            //         int x_rect = listePieces[i].screenRect.x;
+            //         int y_rect = listePieces[i].screenRect.y;
+            //         int w_rect = listePieces[i].screenRect.w;
+            //         int h_rect = listePieces[i].screenRect.h;
+
+            //         if(x_souris >= x_rect && x_souris < x_rect + w_rect && y_souris >= y_rect && y_souris < y_rect + h_rect){
+            //             numPiece = i;
+            //             etatPrecedent =0;
+            //             break;
+            //         }
+            //     }
+            // }
+            if(boutons == 4 && etatPrecedentRigthButton==0){
                 for(int i=0; i<16; i++){
                     int x_rect = listePieces[i].screenRect.x;
                     int y_rect = listePieces[i].screenRect.y;
                     int w_rect = listePieces[i].screenRect.w;
                     int h_rect = listePieces[i].screenRect.h;
 
+
                     if(x_souris >= x_rect && x_souris < x_rect + w_rect && y_souris >= y_rect && y_souris < y_rect + h_rect){
-                        numPiece = i;
-                        etatPrecedent =0;
+                        printf("%d \n", x_rect );
+                        initPiece(&listePieces[i], &listePieces[i].imageDecoupe, &listePieces[i].screenRect, listePieces[i].entierAngle + 1);
+                        etatPrecedentRigthButton = 1;
                         break;
                     }
                 }
-            }
-            if(boutons == 4){
-                for(int i=0; i<16; i++){
-                    int x_rect = listePieces[i].screenRect.x;
-                    int y_rect = listePieces[i].screenRect.y;
-                    int w_rect = listePieces[i].screenRect.w;
-                    int h_rect = listePieces[i].screenRect.h;
 
-                    printf("%d \n",x_rect );
-
-                    if(x_souris >= x_rect && x_souris < x_rect + w_rect && y_souris >= y_rect && y_souris < y_rect + h_rect){
-                        initPiece(&listePieces[i], &listePieces[i].imageDecoupe, &listePieces[i].screenRect, listePieces[i].angle + 1);
-                        break;
-                    }
-                }
             }
-            printf("%d \n", numPiece );
+            if(boutons !=4 && etatPrecedentRigthButton ==1){
+                etatPrecedentRigthButton = 0;
+            }
+            // printf("%d \n", numPiece );
 
         }
         printf("\n");
