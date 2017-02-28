@@ -161,7 +161,7 @@ int main()
             // fprintf(stdout, "Déplacement de la souris : %d;%d\n",x_souris,y_souris);
 
             // front montant
-            if(boutons ==1 && etatPrecedent ==0){
+            if(boutons ==1 && etatPrecedent !=1){
                
                 for(int i=0; i<16; i++){
                     int x_rect = listePieces[i].screenRect.x;
@@ -175,24 +175,44 @@ int main()
                         break;
                     }
                 }
-                if(etatPrecedent != 1) {
-                    if(numPiece !=-1 &&
-                        x_souris >= 460 && x_souris< 860 &&
-                        y_souris >= 25 && y_souris < 425){
+                if(etatPrecedent == 0) {
+                    if(numPiece !=-1){
+                        if(x_souris >= 460 && x_souris< 860 &&
+                            y_souris >= 25 && y_souris < 425){
 
-                        SDL_Rect new_rect;
-                        new_rect.x = (x_souris -460)/100 * 100 + 460;
-                        new_rect.y = (y_souris -25)/100 *100 + 25;
-                        new_rect.w =100;
-                        new_rect.h =100;
-                        initPiece(&listePieces[numPiece], 
+                            SDL_Rect new_rect;
+                            new_rect.x = (x_souris -460)/100 * 100 + 460;
+                            new_rect.y = (y_souris -25)/100 *100 + 25;
+                            new_rect.w =100;
+                            new_rect.h =100;
+                            initPiece(&listePieces[numPiece], 
                             &listePieces[numPiece].imageDecoupe, 
                             &new_rect, 
                             listePieces[numPiece].entierAngle);
-                        numPiece = -1;
-                    } 
-                }
+                            numPiece = -1;
+                        }else if(x_souris >= 40 && x_souris< 440 &&
+                                y_souris >= 25 && y_souris < 425){
 
+                            SDL_Rect new_rect;
+                            new_rect.x = (x_souris -40)/100 * 100 + 40;
+                            new_rect.y = (y_souris -25)/100 *100 + 25;
+                            new_rect.w =100;
+                            new_rect.h =100;
+                            initPiece(&listePieces[numPiece], 
+                            &listePieces[numPiece].imageDecoupe, 
+                            &new_rect, 
+                            listePieces[numPiece].entierAngle);
+                            numPiece = -1;
+
+                        }else{
+                            numPiece = -1;
+                        }
+                        etatPrecedent = 2;
+                    }
+                }
+                if(etatPrecedent ==2 && boutons ==0){
+                    etatPrecedent = 0;
+                }
             }
             printf("%d\n", etatPrecedent);  
             printf("%d \n", numPiece );
