@@ -68,11 +68,11 @@ int isInRect(int x_souris, int y_souris, SDL_Rect * rect){
     return 0;
 }
 
-void trouverCase(int x_souris, int y_souris, SDL_Rect * new_rect){
-    new_rect.x = (x_souris -460)/100 * 100 + 460;
-    new_rect.y = (y_souris -25)/100 *100 + 25;
-    new_rect.w =100;
-    new_rect.h =100;
+void trouverCase(int x_souris, int y_souris, SDL_Rect * new_rect, SDL_Rect * grille){
+    new_rect->x = (x_souris -grille->x)/100 * 100 + grille->x;
+    new_rect->y = (y_souris -grille->y)/100 *100 + grille->y;
+    new_rect->w =100;
+    new_rect->h =100;
 } 
 
 int main()
@@ -157,6 +157,7 @@ int main()
                 case SDL_MOUSEMOTION:
                     x_souris = event.button.x;
                     y_souris = event.button.y;
+
                 case SDL_MOUSEBUTTONDOWN: // if the event is mouse click
                     if(event.button.clicks !=0){
 
@@ -174,17 +175,24 @@ int main()
                             }
                         }
                     }
-                    printf("%d \n", numPiece );
                     if(event.button.button == SDL_BUTTON_LEFT)  // check if it is in the desired area
                     {
                         if(event.button.clicks !=0){
-                            if(isInRect(x_souris, y_souris, grilleGauche) && isInRect(x_souris, y_souris, grilleDroite)){
-                                SDL_Rect new_rect = NULL;
-                                trouverCase(x_souris, y_souris, &new_rect);
+                            SDL_Rect new_rect;
+                            int modif = 0;
+                            if(isInRect(x_souris, y_souris, &grilleGauche)){
+                                trouverCase(x_souris, y_souris, &new_rect, &grilleGauche);
+                                modif = 1;
+                            }else if(isInRect(x_souris, y_souris, &grilleDroite)){
+                                trouverCase(x_souris, y_souris, &new_rect, &grilleDroite);
+                                modif = 1;
+                            }
+                            if(modif==1){
                                 initPiece(&listePieces[numPiece], 
                                 &listePieces[numPiece].imageDecoupe, 
                                 &new_rect, 
                                 listePieces[numPiece].entierAngle);
+                                // numPiece = -1;                                
                             }
                         }
                     }else if(event.button.button == SDL_BUTTON_RIGHT){
@@ -200,6 +208,7 @@ int main()
                             numPiece = -1;
                         }
                     }
+                    printf("%d \n", numPiece );
             }
         }
 
