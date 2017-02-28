@@ -114,24 +114,27 @@ int main()
     Piece listePieces[16];
     createPuzzle(listePieces, liste_permutation);
 
+    // grille gauche
+    SDL_Rect grilleGauche;
+    grilleGauche.x = 40;
+    grilleGauche.y = 25;
+    grilleGauche.w = 400;
+    grilleGauche.h = 400; 
+
     // grille droite, de résolution
-    SDL_Rect rectDroit;
-    rectDroit.x = 460;
-    rectDroit.y = 25;
-    rectDroit.w = 400;
-    rectDroit.h = 400; 
-
-    SDL_SetRenderDrawColor( renderer, 180, 
-        255, 255, 255); 
-    SDL_RenderFillRect(renderer, &rectDroit);
-
+    SDL_Rect grilleDroite;
+    grilleDroite.x = 460;
+    grilleDroite.y = 25;
+    grilleDroite.w = 400;
+    grilleDroite.h = 400; 
 
     int x_souris = -1;
     int y_souris = -1;
 
-    int etatPrecedent =0;
-    int etatPrecedentRigthButton =0;
+    int etatPrecedentLeftButton =0;
+    int etatPrecedentRightButton =0;
     int numPiece = -1;
+    int numPieceDeplace = -1;
     
     while (!quit)
     {
@@ -161,7 +164,7 @@ int main()
             // fprintf(stdout, "Déplacement de la souris : %d;%d\n",x_souris,y_souris);
 
             // front montant
-            if(boutons ==1 && etatPrecedent !=1){
+            if(boutons ==1 && etatPrecedentLeftButton==0){
                
                 for(int i=0; i<16; i++){
                     int x_rect = listePieces[i].screenRect.x;
@@ -169,13 +172,16 @@ int main()
                     int w_rect = listePieces[i].screenRect.w;
                     int h_rect = listePieces[i].screenRect.h;
 
-                    if(x_souris >= x_rect && x_souris < x_rect + w_rect && y_souris >= y_rect && y_souris < y_rect + h_rect){
-                        numPiece = i;
-                        etatPrecedent =1;
-                        break;
+                    if(numPieceDeplace !=i && x_souris >= x_rect && x_souris < x_rect + w_rect && y_souris >= y_rect && y_souris < y_rect + h_rect){
+                        
+                            numPiece = i;
+                            numPieceDeplace =-1;
+                            etatPrecedentLeftButton =1;
+                            break;
+
                     }
                 }
-                if(etatPrecedent == 0) {
+                if(etatPrecedentLeftButton == 0) {
                     if(numPiece !=-1){
                         if(x_souris >= 460 && x_souris< 860 &&
                             y_souris >= 25 && y_souris < 425){
@@ -189,6 +195,7 @@ int main()
                             &listePieces[numPiece].imageDecoupe, 
                             &new_rect, 
                             listePieces[numPiece].entierAngle);
+                            numPieceDeplace = numPiece;
                             numPiece = -1;
                         }else if(x_souris >= 40 && x_souris< 440 &&
                                 y_souris >= 25 && y_souris < 425){
@@ -202,26 +209,25 @@ int main()
                             &listePieces[numPiece].imageDecoupe, 
                             &new_rect, 
                             listePieces[numPiece].entierAngle);
+                            numPieceDeplace = numPiece;
                             numPiece = -1;
 
                         }else{
+                            numPieceDeplace = numPiece;
                             numPiece = -1;
                         }
-                        etatPrecedent = 2;
                     }
                 }
-                if(etatPrecedent ==2 && boutons ==0){
-                    etatPrecedent = 0;
-                }
             }
-            printf("%d\n", etatPrecedent);  
+            printf("%d\n", etatPrecedentLeftButton);  
             printf("%d \n", numPiece );
 
-            if(boutons !=1 && etatPrecedent ==1){
-                etatPrecedent = 0;
+            // Reset de etatPrecedentLeftButton
+            if(boutons !=1 && etatPrecedentLeftButton ==1){
+                etatPrecedentLeftButton = 0;
             }
 
-            if(boutons == 4 && etatPrecedentRigthButton==0){
+            if(boutons == 4 && etatPrecedentRightButton==0){
                 for(int i=0; i<16; i++){
                     int x_rect = listePieces[i].screenRect.x;
                     int y_rect = listePieces[i].screenRect.y;
@@ -232,24 +238,30 @@ int main()
                     if(x_souris >= x_rect && x_souris < x_rect + w_rect && y_souris >= y_rect && y_souris < y_rect + h_rect){
                         printf("%d \n", x_rect );
                         initPiece(&listePieces[i], &listePieces[i].imageDecoupe, &listePieces[i].screenRect, listePieces[i].entierAngle + 1);
-                        etatPrecedentRigthButton = 1;
+                        etatPrecedentRightButton = 1;
                         break;
                     }
                 }
 
             }
-            if(boutons !=4 && etatPrecedentRigthButton ==1){
-                etatPrecedentRigthButton = 0;
+            if(boutons !=4 && etatPrecedentRightButton ==1){
+                etatPrecedentRightButton = 0;
             }
             // printf("%d \n", numPiece );
 
         }
         printf("\n");
-        /* On a traité les événements, on peut continuer le jeu */
 
-        /* On ralentit un peu le programme */
-        // SDL_Delay(10);
-
+        // Tout clear en noir
+        SDL_SetRenderDrawColor( renderer, 0, 
+        0, 0, 255);
+        SDL_RenderClear(renderer);
+        // Afficher les grille gauche et droite
+        SDL_SetRenderDrawColor( renderer, 242, 
+        227, 198, 255); 
+        SDL_RenderFillRect(renderer, &grilleGauche);
+        SDL_RenderFillRect(renderer, &grilleDroite);
+        // Afficher le puzzle
         renderPuzzle(listePieces, texture, renderer);
         SDL_RenderPresent(renderer);    
     }
