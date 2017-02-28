@@ -105,12 +105,6 @@ int main()
     }
     shuffleList(liste_permutation);
 
-
-    // for(int i=0;i<16; i++){
-    //     printf("%d", liste[i] );
-    // }
-    // printf("\n");
-
     Piece listePieces[16];
     createPuzzle(listePieces, liste_permutation);
 
@@ -131,127 +125,38 @@ int main()
     int x_souris = -1;
     int y_souris = -1;
 
-    int etatPrecedentLeftButton =0;
-    int etatPrecedentRightButton =0;
-    int numPiece = -1;
-    int numPieceDeplace = -1;
     
+    SDL_Event event;
+
     while (!quit)
     {
-        SDL_PumpEvents(); // On demande à./ la SDL de mettre à jour les états sur les périphériques
 
 
-        // Clavier
+        while(SDL_PollEvent(&event)) // check to see if an event has happened
         {
-            const Uint8* pKeyStates = SDL_GetKeyboardState(NULL);
-            if ( pKeyStates[SDL_SCANCODE_ESCAPE] )
+            switch(event.type)
             {
-                quit = 1;
-            }
-            if (pKeyStates[SDL_SCANCODE_RETURN]) {
-                printf("La touche entree est appuyee.");
-            }
-        }
-        printf("\n");
-        // Souris
-        {
-            Uint32 boutons = SDL_GetMouseState(&x_souris,&y_souris);
-
-            fprintf(stdout, "Position de la souris : %d;%d\n",x_souris,y_souris);
-            fprintf(stdout, "Bouton de la souris : %d\n",boutons);
-
-            // SDL_GetRelativeMouseState(&x_souris,&y_souris);
-            // fprintf(stdout, "Déplacement de la souris : %d;%d\n",x_souris,y_souris);
-
-            // front montant
-            if(boutons ==1 && etatPrecedentLeftButton==0){
-               
-                for(int i=0; i<16; i++){
-                    int x_rect = listePieces[i].screenRect.x;
-                    int y_rect = listePieces[i].screenRect.y;
-                    int w_rect = listePieces[i].screenRect.w;
-                    int h_rect = listePieces[i].screenRect.h;
-
-                    if(numPieceDeplace !=i && x_souris >= x_rect && x_souris < x_rect + w_rect && y_souris >= y_rect && y_souris < y_rect + h_rect){
-                        
-                            numPiece = i;
-                            numPieceDeplace =-1;
-                            etatPrecedentLeftButton =1;
-                            break;
-
+                case SDL_KEYDOWN:
+                    if(event.key.keysym.sym == SDLK_ESCAPE){
+                        quit = 1 ;
                     }
-                }
-                if(etatPrecedentLeftButton == 0) {
-                    if(numPiece !=-1){
-                        if(x_souris >= 460 && x_souris< 860 &&
-                            y_souris >= 25 && y_souris < 425){
-
-                            SDL_Rect new_rect;
-                            new_rect.x = (x_souris -460)/100 * 100 + 460;
-                            new_rect.y = (y_souris -25)/100 *100 + 25;
-                            new_rect.w =100;
-                            new_rect.h =100;
-                            initPiece(&listePieces[numPiece], 
-                            &listePieces[numPiece].imageDecoupe, 
-                            &new_rect, 
-                            listePieces[numPiece].entierAngle);
-                            numPieceDeplace = numPiece;
-                            numPiece = -1;
-                        }else if(x_souris >= 40 && x_souris< 440 &&
-                                y_souris >= 25 && y_souris < 425){
-
-                            SDL_Rect new_rect;
-                            new_rect.x = (x_souris -40)/100 * 100 + 40;
-                            new_rect.y = (y_souris -25)/100 *100 + 25;
-                            new_rect.w =100;
-                            new_rect.h =100;
-                            initPiece(&listePieces[numPiece], 
-                            &listePieces[numPiece].imageDecoupe, 
-                            &new_rect, 
-                            listePieces[numPiece].entierAngle);
-                            numPieceDeplace = numPiece;
-                            numPiece = -1;
-
-                        }else{
-                            numPieceDeplace = numPiece;
-                            numPiece = -1;
+                case SDL_MOUSEMOTION:
+                    x_souris = event.button.x;
+                    y_souris = event.button.y;
+                case SDL_MOUSEBUTTONDOWN: // if the event is mouse click
+                    if(event.button.button == SDL_BUTTON_LEFT)  // check if it is in the desired area
+                    {
+                        if(event.button.clicks !=0){
+                            printf(" gauche\n");   
+                        }
+                    }else if(event.button.button == SDL_BUTTON_RIGHT){
+                        if(event.button.clicks !=0){
+                            printf("droite\n");
                         }
                     }
-                }
             }
-            printf("%d\n", etatPrecedentLeftButton);  
-            printf("%d \n", numPiece );
-
-            // Reset de etatPrecedentLeftButton
-            if(boutons !=1 && etatPrecedentLeftButton ==1){
-                etatPrecedentLeftButton = 0;
-            }
-
-            if(boutons == 4 && etatPrecedentRightButton==0){
-                for(int i=0; i<16; i++){
-                    int x_rect = listePieces[i].screenRect.x;
-                    int y_rect = listePieces[i].screenRect.y;
-                    int w_rect = listePieces[i].screenRect.w;
-                    int h_rect = listePieces[i].screenRect.h;
-
-
-                    if(x_souris >= x_rect && x_souris < x_rect + w_rect && y_souris >= y_rect && y_souris < y_rect + h_rect){
-                        printf("%d \n", x_rect );
-                        initPiece(&listePieces[i], &listePieces[i].imageDecoupe, &listePieces[i].screenRect, listePieces[i].entierAngle + 1);
-                        etatPrecedentRightButton = 1;
-                        break;
-                    }
-                }
-
-            }
-            if(boutons !=4 && etatPrecedentRightButton ==1){
-                etatPrecedentRightButton = 0;
-            }
-            // printf("%d \n", numPiece );
-
         }
-        printf("\n");
-
+        printf("flkkgflkglgk\n");
         // Tout clear en noir
         SDL_SetRenderDrawColor( renderer, 0, 
         0, 0, 255);
