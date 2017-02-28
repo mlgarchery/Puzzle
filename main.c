@@ -129,8 +129,10 @@ int main()
     int x_souris = -1;
     int y_souris = -1;
 
-    // int etatPrecedent =0;
+    int etatPrecedent =0;
     int etatPrecedentRigthButton =0;
+    int numPiece = -1;
+    
     while (!quit)
     {
         SDL_PumpEvents(); // On demande à./ la SDL de mettre à jour les états sur les périphériques
@@ -159,22 +161,46 @@ int main()
             // fprintf(stdout, "Déplacement de la souris : %d;%d\n",x_souris,y_souris);
 
             // front montant
-            // int numPiece = -1;
-            // if(boutons ==1 && etatPrecedent ==0){
+            if(boutons ==1 && etatPrecedent ==0){
+               
+                for(int i=0; i<16; i++){
+                    int x_rect = listePieces[i].screenRect.x;
+                    int y_rect = listePieces[i].screenRect.y;
+                    int w_rect = listePieces[i].screenRect.w;
+                    int h_rect = listePieces[i].screenRect.h;
 
-            //     for(int i=0; i<16; i++){
-            //         int x_rect = listePieces[i].screenRect.x;
-            //         int y_rect = listePieces[i].screenRect.y;
-            //         int w_rect = listePieces[i].screenRect.w;
-            //         int h_rect = listePieces[i].screenRect.h;
+                    if(x_souris >= x_rect && x_souris < x_rect + w_rect && y_souris >= y_rect && y_souris < y_rect + h_rect){
+                        numPiece = i;
+                        etatPrecedent =1;
+                        break;
+                    }
+                }
+                if(etatPrecedent != 1) {
+                    if(numPiece !=-1 &&
+                        x_souris >= 460 && x_souris< 860 &&
+                        y_souris >= 25 && y_souris < 425){
 
-            //         if(x_souris >= x_rect && x_souris < x_rect + w_rect && y_souris >= y_rect && y_souris < y_rect + h_rect){
-            //             numPiece = i;
-            //             etatPrecedent =0;
-            //             break;
-            //         }
-            //     }
-            // }
+                        SDL_Rect new_rect;
+                        new_rect.x = (x_souris -460)/100 * 100 + 460;
+                        new_rect.y = (y_souris -25)/100 *100 + 25;
+                        new_rect.w =100;
+                        new_rect.h =100;
+                        initPiece(&listePieces[numPiece], 
+                            &listePieces[numPiece].imageDecoupe, 
+                            &new_rect, 
+                            listePieces[numPiece].entierAngle);
+                        numPiece = -1;
+                    } 
+                }
+
+            }
+            printf("%d\n", etatPrecedent);  
+            printf("%d \n", numPiece );
+
+            if(boutons !=1 && etatPrecedent ==1){
+                etatPrecedent = 0;
+            }
+
             if(boutons == 4 && etatPrecedentRigthButton==0){
                 for(int i=0; i<16; i++){
                     int x_rect = listePieces[i].screenRect.x;
