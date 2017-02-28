@@ -2,6 +2,7 @@
 // #include <math.h>
 #include <SDL.h>
 #include <stdbool.h>
+#include <time.h>
     
 typedef struct Piece Piece;
 struct Piece{
@@ -99,7 +100,7 @@ int isCaseUsed(SDL_Rect * new_rect, Piece listePieces[16]){
     return -1;
 } 
 
-int checkState(Piece listePieces[16]){
+int playerWon(Piece listePieces[16]){
     for (int i=0; i<16; i++){
         int pos_image = -1;
         int pos_screen = -1;
@@ -119,7 +120,8 @@ int checkState(Piece listePieces[16]){
 
 int main()
 {
-    bool quit = false;
+    int quit = 0 ;
+    srand(time(NULL)); // on donne une nouvelle graine au générateur aléatoire
  
     SDL_Init(SDL_INIT_VIDEO);
     int size_x= 900;
@@ -200,6 +202,21 @@ int main()
                     x_souris = event.button.x;
                     y_souris = event.button.y;
 
+                    if(numPiece != -1){
+                        SDL_Rect rectMouvement;
+                        rectMouvement.x = x_souris - listePieces[numPiece].screenRect.w/2;
+                        rectMouvement.y = y_souris - listePieces[numPiece].screenRect.h/2;
+                        rectMouvement.w = listePieces[numPiece].screenRect.w;
+                        rectMouvement.h = listePieces[numPiece].screenRect.h;
+
+                        printf("%d,\n", rectMouvement.x );
+
+                        initPiece(&listePieces[numPiece], 
+                                    &listePieces[numPiece].imageDecoupe, 
+                                    &rectMouvement, 
+                                    listePieces[numPiece].entierAngle);
+                    }
+
                 case SDL_MOUSEBUTTONDOWN: // if the event is mouse click
                     if(event.button.button == SDL_BUTTON_LEFT)  // check if it is in the desired area
                     {
@@ -228,14 +245,13 @@ int main()
                                     numPiece = -1;      
 
                                 }else if(modif && isCaseUsed(&new_rect, listePieces) != -1){
+                                    printf("%d \n", isCaseUsed(&new_rect, listePieces) );
                                     Piece temp;
                                     temp = listePieces[isCaseUsed(&new_rect, listePieces)];
-                                    // printf("Num piece = %d \t Temp = %d\n",numPiece, temp );
                                     listePieces[isCaseUsed(&new_rect, listePieces)] = listePieces[numPiece];
                                     listePieces[numPiece] = temp;
                                     numPiece = -1;
                                 }
-                                // printf("Case used : %d \n", isCaseUsed(&new_rect, listePieces));
                                 numPiece = -1;
 
                             }
@@ -255,7 +271,6 @@ int main()
                         }
                     }
             }
-            // printf("%d \n", numPiece );
         }
 
         // Tout clear en noir
@@ -269,29 +284,20 @@ int main()
         SDL_RenderFillRect(renderer, &grilleDroite);
         // Afficher le puzzle
         renderPuzzle(listePieces, texture, renderer);
-        if(!checkState(listePieces)){
-            // quit = 1;
-            SDL_Surface * youWon = SDL_LoadBMP("images/you_won.bmp");
-            SDL_Texture * textureW = SDL_CreateTextureFromSurface(renderer, youWon);
-            SDL_RenderCopy(renderer, textureW, NULL, &grilleGauche);
+        if(playerWon(listePieces)){
+            quit = 1;
+            SDL_Surface * imageYouWon = SDL_LoadBMP("images/you_won.bmp");
+            SDL_Texture * textureWon = SDL_CreateTextureFromSurface(renderer, imageYouWon);
+            SDL_RenderCopy(renderer, textureWon, NULL, &grilleGauche);
             SDL_RenderPresent(renderer); 
         }
         SDL_RenderPresent(renderer);    
     }
 
-    if(!checkState(listePieces)){
-        
-        while(SDL_PollEvent(&event)) // check to see if an event has happened
-        {
-            switch(event.type)
-            {
-                case SDL_KEYDOWN:
-                    if(event.key.keysym.sym == SDLK_ESCAPE){
-                        quit = 1 ;
-                    }
-            }
-        }
+    if(playerWon(listePieces)){
+        SDL_Delay(8000);
     }
+
     SDL_DestroyTexture(texture);
     SDL_FreeSurface(image);
     SDL_DestroyRenderer(renderer);
