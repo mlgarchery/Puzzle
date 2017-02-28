@@ -156,7 +156,7 @@ int main()
     SDL_SetRenderDrawColor( renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
-    // Création du puzzle (grille gauche)
+    // Création d'une permutation de pièce
     int liste_permutation[16];
     for(int i=0; i<16; i=i+1){
         liste_permutation[i] = i;
@@ -209,16 +209,14 @@ int main()
                         rectMouvement.w = listePieces[numPiece].screenRect.w;
                         rectMouvement.h = listePieces[numPiece].screenRect.h;
 
-                        printf("%d,\n", rectMouvement.x );
-
                         initPiece(&listePieces[numPiece], 
                                     &listePieces[numPiece].imageDecoupe, 
                                     &rectMouvement, 
                                     listePieces[numPiece].entierAngle);
                     }
 
-                case SDL_MOUSEBUTTONDOWN: // if the event is mouse click
-                    if(event.button.button == SDL_BUTTON_LEFT)  // check if it is in the desired area
+                case SDL_MOUSEBUTTONDOWN: // on détecte un clic
+                    if(event.button.button == SDL_BUTTON_LEFT) 
                     {
                         if(numPiece == -1){
                             if(event.button.clicks !=0){
@@ -295,6 +293,7 @@ int main()
     }
 
     if(playerWon(listePieces)){
+        // laisser au joueur le temps d'aprécier sa victoire
         SDL_Delay(8000);
     }
 
