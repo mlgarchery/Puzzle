@@ -61,6 +61,20 @@ void renderPuzzle(Piece listePieces[16], SDL_Texture * texture, SDL_Renderer * r
 
 }
 
+int isInRect(int x_souris, int y_souris, SDL_Rect * rect){
+    if( x_souris >= rect->x && x_souris < rect->x + rect->w && y_souris >= rect->y && y_souris < rect->y + rect->h){
+        return 1;
+    }
+    return 0;
+}
+
+void trouverCase(int x_souris, int y_souris, SDL_Rect * new_rect){
+    new_rect.x = (x_souris -460)/100 * 100 + 460;
+    new_rect.y = (y_souris -25)/100 *100 + 25;
+    new_rect.w =100;
+    new_rect.h =100;
+} 
+
 int main()
 {
     bool quit = false;
@@ -124,7 +138,7 @@ int main()
 
     int x_souris = -1;
     int y_souris = -1;
-
+    int numPiece = -1;
     
     SDL_Event event;
 
@@ -144,19 +158,52 @@ int main()
                     x_souris = event.button.x;
                     y_souris = event.button.y;
                 case SDL_MOUSEBUTTONDOWN: // if the event is mouse click
+                    if(event.button.clicks !=0){
+
+                        for(int i=0; i<16; i++){
+                            int x_rect = listePieces[i].screenRect.x;
+                            int y_rect = listePieces[i].screenRect.y;
+                            int w_rect = listePieces[i].screenRect.w;
+                            int h_rect = listePieces[i].screenRect.h;
+
+                            if(x_souris >= x_rect && x_souris < x_rect + w_rect &&
+                                y_souris >= y_rect && y_souris < y_rect + h_rect){
+                                numPiece = i;
+                                printf("%d \n", numPiece );
+                                break;
+                            }
+                        }
+                    }
+                    printf("%d \n", numPiece );
                     if(event.button.button == SDL_BUTTON_LEFT)  // check if it is in the desired area
                     {
                         if(event.button.clicks !=0){
-                            printf(" gauche\n");   
+                            if(isInRect(x_souris, y_souris, grilleGauche) && isInRect(x_souris, y_souris, grilleDroite)){
+                                SDL_Rect new_rect = NULL;
+                                trouverCase(x_souris, y_souris, &new_rect);
+                                initPiece(&listePieces[numPiece], 
+                                &listePieces[numPiece].imageDecoupe, 
+                                &new_rect, 
+                                listePieces[numPiece].entierAngle);
+                            }
                         }
                     }else if(event.button.button == SDL_BUTTON_RIGHT){
                         if(event.button.clicks !=0){
-                            printf("droite\n");
+                            if(numPiece != -1){
+                                initPiece(&listePieces[numPiece], 
+                                    &listePieces[numPiece].imageDecoupe, 
+                                    &listePieces[numPiece].screenRect, 
+                                    listePieces[numPiece].entierAngle + 1);
+                                numPiece = -1;
+                            }
+                        }else{
+                            numPiece = -1;
                         }
                     }
             }
         }
-        printf("flkkgflkglgk\n");
+
+
         // Tout clear en noir
         SDL_SetRenderDrawColor( renderer, 0, 
         0, 0, 255);
@@ -178,6 +225,5 @@ int main()
     SDL_DestroyWindow(window);
  
     SDL_Quit();
- 
     return 0;
 }
