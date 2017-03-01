@@ -9,16 +9,18 @@ struct Piece{
     SDL_Rect imageDecoupe;
     SDL_Rect screenRect;
     int entierAngle; 
+    int isSelected;
 };
 
 void initPiece(Piece * piece, SDL_Rect * imageDecoupe, SDL_Rect * screenRect, int entierAngle){
     /* Découpe un rectangle (imageDecoupe) de l'image et l'associe a 
     un rectangle de l'écran (screenRect) avec une rotation de
-    entierAngle*90 degrés */
+    en./puzzletierAngle*90 degrés */
 
     piece->imageDecoupe = *imageDecoupe; // === (*piece).imageDecoupe.x
     piece->screenRect = *screenRect;
     piece->entierAngle = entierAngle%4; // entierAngle appartient à {0,1,2,3}
+    piece->isSelected = 0;
 }
 
 void renderPieceTexture(Piece * piece, SDL_Texture * texture, SDL_Renderer * renderer){
@@ -72,8 +74,17 @@ void createPuzzle(Piece listePieces[16], int liste_permutation[16]){
 
 void renderPuzzle(Piece listePieces[16], SDL_Texture * texture, SDL_Renderer * renderer){
     for (int i = 0; i < 16; i++){
-        renderPieceTexture(&listePieces[i], texture, renderer);
-    }    
+        if(!listePieces[i].isSelected){
+            renderPieceTexture(&listePieces[i], texture, renderer);
+        }
+            
+    }
+    // On render en dernier la piece en déplacement    
+    for (int i = 0; i < 16; ++i){
+        if(listePieces[i].isSelected){
+            renderPieceTexture(&listePieces[i], texture, renderer);
+        }
+    }
 
 }
 
@@ -100,15 +111,17 @@ int isCaseUsed(SDL_Rect * new_rect, Piece listePieces[16]){
     return -1;
 } 
 
+
+
+
+
+
+
+
 int playerWon(Piece listePieces[16]){
     for (int i=0; i<16; i++){
-        int pos_image = -1;
-        int pos_screen = -1;
-
-        pos_image = listePieces[i].imageDecoupe.x/100 + (listePieces[i].imageDecoupe.y/100)*4;
-        pos_screen = (listePieces[i].screenRect.x-460)/100 + ((listePieces[i].screenRect.y-25)/100)*4;
-
-        if(pos_image != pos_screen){
+        if(listePieces[i].imageDecoupe.x != listePieces[i].screenRect.x-460
+        || listePieces[i].imageDecoupe.y != listePieces[i].screenRect.y-25){
             return 0;
         }
         if(listePieces[i].entierAngle !=0){
@@ -117,6 +130,23 @@ int playerWon(Piece listePieces[16]){
     }
     return 1;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 int main()
 {
@@ -213,6 +243,7 @@ int main()
                                     &listePieces[numPiece].imageDecoupe, 
                                     &rectMouvement, 
                                     listePieces[numPiece].entierAngle);
+                        listePieces[numPiece].isSelected = 1;
                     }
 
                 case SDL_MOUSEBUTTONDOWN: // on détecte un clic
@@ -280,7 +311,31 @@ int main()
         227, 198, 255); 
         SDL_RenderFillRect(renderer, &grilleGauche);
         SDL_RenderFillRect(renderer, &grilleDroite);
-        // Afficher le puzzle
+        SDL_SetRenderDrawColor( renderer, 0, 
+        0, 0, 255);
+        SDL_Rect  colonne;
+        SDL_Rect ligne;
+        for(int i=0;i<6;i++){
+            int decalage_x = 40;
+            int decalage_y = 25;
+            if(i/3>0){
+                decalage_x = 460;
+            }
+            colonne.x = decalage_x +100*(i%3+1);
+            colonne.y = decalage_y;
+            colonne.w = 2;
+            colonne.h = 400;
+
+            ligne.x = decalage_x;
+            ligne.y = decalage_y +100*(i%3+1);
+            ligne.w = 400;
+            ligne.h = 2;
+            SDL_RenderFillRect(renderer, &colonne);    
+            SDL_RenderFillRect(renderer, &ligne);    
+        }
+
+
+        // Afficher la liste des pièces
         renderPuzzle(listePieces, texture, renderer);
         if(playerWon(listePieces)){
             quit = 1;
