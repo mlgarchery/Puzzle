@@ -129,13 +129,13 @@ int main()
                                 if(pieceSelected == -1){
                                     pieceSelected = getPiece(x_souris, y_souris, listePieces);
                                 }else{
-                                    if(isInGrille && isCaseUsed(&new_rect, listePieces) == -1){
+                                    if(isCaseUsed(&new_rect, listePieces) == -1){
                                         // On place la piece sur la case vide
                                         listePieces[pieceSelected].screenRect = new_rect; 
                                         listePieces[pieceSelected].isSelected = 0;
                                         pieceSelected = -1;      
 
-                                    }else if(isInGrille && isCaseUsed(&new_rect, listePieces) != -1){
+                                    }else if(isCaseUsed(&new_rect, listePieces) != -1){
                                         // On échange la position des deux pièces
                                         switchScreenRect(&listePieces[isCaseUsed(&new_rect, listePieces)], 
                                                          &listePieces[pieceSelected]);
