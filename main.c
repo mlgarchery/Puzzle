@@ -8,6 +8,7 @@ typedef struct Piece Piece;
 struct Piece{
     SDL_Rect imageDecoupe;
     SDL_Rect screenRect;
+    SDL_Rect pieceRectMoving;
     int entierAngle; 
     int isSelected;
 };
@@ -23,10 +24,20 @@ void initPiece(Piece * piece, SDL_Rect * imageDecoupe, SDL_Rect * screenRect, in
     piece->isSelected = 0;
 }
 
+void incrementeEntierAngle(Piece * piece){
+    piece->entierAngle = (piece->entierAngle+1)%4;
+}
+
 void renderPieceTexture(Piece * piece, SDL_Texture * texture, SDL_Renderer * renderer){
     /* Copy sur le renderer la texture associée à la pièce */
 
     SDL_RenderCopyEx(renderer, texture,  &piece->imageDecoupe, &piece->screenRect, piece->entierAngle*90, NULL, SDL_FLIP_NONE);
+}
+
+void renderPieceSelected(Piece * piece, SDL_Texture * texture, SDL_Renderer * renderer){
+    /* Copy sur le renderer la texture associée à la pièce selectionnée (potentiellement mouvante) */
+
+    SDL_RenderCopyEx(renderer, texture,  &piece->imageDecoupe, &piece->pieceRectMoving, piece->entierAngle*90, NULL, SDL_FLIP_NONE);
 }
 
 void shuffleList(int liste[16]){
@@ -59,7 +70,6 @@ int getPiece(int x_souris, int y_souris, Piece listePieces[16]){
 
 }
 
-
 void createPuzzle(Piece listePieces[16], int liste_permutation[16]){
     /*  */
 
@@ -73,19 +83,24 @@ void createPuzzle(Piece listePieces[16], int liste_permutation[16]){
 }
 
 void renderPuzzle(Piece listePieces[16], SDL_Texture * texture, SDL_Renderer * renderer){
+    int pieceSelected = -1;
     for (int i = 0; i < 16; i++){
         if(!listePieces[i].isSelected){
             renderPieceTexture(&listePieces[i], texture, renderer);
-        }
-            
-    }
-    // On render en dernier la piece en déplacement    
-    for (int i = 0; i < 16; ++i){
-        if(listePieces[i].isSelected){
-            renderPieceTexture(&listePieces[i], texture, renderer);
+        }else{
+            pieceSelected = i;
         }
     }
+    if(pieceSelected != -1){
+        renderPieceSelected(&listePieces[pieceSelected], texture, renderer);
+    }
+}
 
+void switchScreenRect(Piece * piece1, Piece * piece2){
+    SDL_Rect tempScreenRect;
+    tempScreenRect = piece1->screenRect;
+    piece1->screenRect = piece2->screenRect;
+    piece2->screenRect = tempScreenRect;
 }
 
 int isInRect(int x_souris, int y_souris, SDL_Rect * rect){
@@ -111,41 +126,16 @@ int isCaseUsed(SDL_Rect * new_rect, Piece listePieces[16]){
     return -1;
 } 
 
-
-
-
-
-
-
-
 int playerWon(Piece listePieces[16]){
     for (int i=0; i<16; i++){
         if(listePieces[i].imageDecoupe.x != listePieces[i].screenRect.x-460
-        || listePieces[i].imageDecoupe.y != listePieces[i].screenRect.y-25){
-            return 0;
-        }
-        if(listePieces[i].entierAngle !=0){
+        || listePieces[i].imageDecoupe.y != listePieces[i].screenRect.y-25
+        || listePieces[i].entierAngle !=0){
             return 0;
         }
     }
     return 1;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 int main()
@@ -212,13 +202,12 @@ int main()
 
     int x_souris = -1;
     int y_souris = -1;
-    int numPiece = -1;
+    int pieceSelected = -1;
     
     SDL_Event event;
 
     while (!quit)
     {
-
 
         while(SDL_PollEvent(&event)) // check to see if an event has happened
         {
@@ -232,71 +221,65 @@ int main()
                     x_souris = event.button.x;
                     y_souris = event.button.y;
 
-                    if(numPiece != -1){
+                    if(pieceSelected != -1){
                         SDL_Rect rectMouvement;
-                        rectMouvement.x = x_souris - listePieces[numPiece].screenRect.w/2;
-                        rectMouvement.y = y_souris - listePieces[numPiece].screenRect.h/2;
-                        rectMouvement.w = listePieces[numPiece].screenRect.w;
-                        rectMouvement.h = listePieces[numPiece].screenRect.h;
+                        rectMouvement.x = x_souris - listePieces[pieceSelected].screenRect.w/2;
+                        rectMouvement.y = y_souris - listePieces[pieceSelected].screenRect.h/2;
+                        rectMouvement.w = listePieces[pieceSelected].screenRect.w;
+                        rectMouvement.h = listePieces[pieceSelected].screenRect.h;
 
-                        initPiece(&listePieces[numPiece], 
-                                    &listePieces[numPiece].imageDecoupe, 
-                                    &rectMouvement, 
-                                    listePieces[numPiece].entierAngle);
-                        listePieces[numPiece].isSelected = 1;
+                        listePieces[pieceSelected].pieceRectMoving = rectMouvement;
+                        listePieces[pieceSelected].isSelected = 1;
                     }
 
-                case SDL_MOUSEBUTTONDOWN: // on détecte un clic
-                    if(event.button.button == SDL_BUTTON_LEFT) 
-                    {
-                        if(numPiece == -1){
-                            if(event.button.clicks !=0){
-                                numPiece = getPiece(x_souris, y_souris, listePieces);
-                            }
-                        }else{
-                            if(event.button.clicks !=0){
+                case SDL_MOUSEBUTTONDOWN: // on détecte un enfoncement de la souris
 
-                                SDL_Rect new_rect;
-                                int modif = 0;
-                                if(isInRect(x_souris, y_souris, &grilleGauche)){
-                                    trouverCase(x_souris, y_souris, &new_rect, &grilleGauche);
-                                    modif = 1;
-                                }else if(isInRect(x_souris, y_souris, &grilleDroite)){
-                                    trouverCase(x_souris, y_souris, &new_rect, &grilleDroite);
-                                    modif = 1;
+                    if(event.button.clicks !=0){ //si c'est un click ..
+                        
+                        if(event.button.button == SDL_BUTTON_RIGHT){ // .. droit
+                            int numPieceRightClicked;
+                            if(pieceSelected == -1){
+                                numPieceRightClicked = getPiece(x_souris, y_souris, listePieces);
+                            }else{
+                                numPieceRightClicked = pieceSelected;
+                            }
+                            if(numPieceRightClicked != -1){
+                                incrementeEntierAngle(&listePieces[numPieceRightClicked]);
+                            }
+                        }else if(event.button.button == SDL_BUTTON_LEFT){ // .. gauche
+                            SDL_Rect new_rect;
+                            int isInGrille = 0;
+                            if(isInRect(x_souris, y_souris, &grilleGauche)){
+                                trouverCase(x_souris, y_souris, &new_rect, &grilleGauche);
+                                isInGrille = 1;
+                            }else if(isInRect(x_souris, y_souris, &grilleDroite)){
+                                trouverCase(x_souris, y_souris, &new_rect, &grilleDroite);
+                                isInGrille = 1;
+                            }
+                            if(isInGrille){
+                                if(pieceSelected == -1){
+                                    pieceSelected = getPiece(x_souris, y_souris, listePieces);
+                                }else{
+                                    if(isInGrille && isCaseUsed(&new_rect, listePieces) == -1){
+                                        // On place la piece sur la case vide
+                                        listePieces[pieceSelected].screenRect = new_rect; 
+                                        listePieces[pieceSelected].isSelected = 0;
+                                        pieceSelected = -1;      
+
+                                    }else if(isInGrille && isCaseUsed(&new_rect, listePieces) != -1){
+                                        // On échange la position des deux pièces
+                                        printf("%d \n", isCaseUsed(&new_rect, listePieces) );
+                                        printf("%d \n", pieceSelected );
+                                        
+                                        switchScreenRect(&listePieces[isCaseUsed(&new_rect, listePieces)], 
+                                                         &listePieces[pieceSelected]);
+
+                                        listePieces[pieceSelected].isSelected = 0;
+                                        pieceSelected = -1;
+                                    }
+                                    pieceSelected = -1;
                                 }
-                                if(modif && isCaseUsed(&new_rect, listePieces) == -1){
-
-                                    initPiece(&listePieces[numPiece], 
-                                    &listePieces[numPiece].imageDecoupe, 
-                                    &new_rect, 
-                                    listePieces[numPiece].entierAngle);
-                                    numPiece = -1;      
-
-                                }else if(modif && isCaseUsed(&new_rect, listePieces) != -1){
-                                    printf("%d \n", isCaseUsed(&new_rect, listePieces) );
-                                    Piece temp;
-                                    temp = listePieces[isCaseUsed(&new_rect, listePieces)];
-                                    listePieces[isCaseUsed(&new_rect, listePieces)] = listePieces[numPiece];
-                                    listePieces[numPiece] = temp;
-                                    numPiece = -1;
-                                }
-                                numPiece = -1;
-
                             }
-                        }
-                    }else if(event.button.button == SDL_BUTTON_RIGHT){
-                        numPiece = getPiece(x_souris, y_souris, listePieces);
-                        if(event.button.clicks !=0){
-                            if(numPiece != -1){
-                                initPiece(&listePieces[numPiece], 
-                                    &listePieces[numPiece].imageDecoupe, 
-                                    &listePieces[numPiece].screenRect, 
-                                    listePieces[numPiece].entierAngle + 1);
-                                numPiece = -1;
-                            }
-                        }else{
-                            numPiece = -1;
                         }
                     }
             }
@@ -306,7 +289,7 @@ int main()
         SDL_SetRenderDrawColor( renderer, 0, 
         0, 0, 255);
         SDL_RenderClear(renderer);
-        // Afficher les grille gauche et droite
+        // Afficher les grilles gauche et droite
         SDL_SetRenderDrawColor( renderer, 242, 
         227, 198, 255); 
         SDL_RenderFillRect(renderer, &grilleGauche);
@@ -333,10 +316,9 @@ int main()
             SDL_RenderFillRect(renderer, &colonne);    
             SDL_RenderFillRect(renderer, &ligne);    
         }
-
-
         // Afficher la liste des pièces
         renderPuzzle(listePieces, texture, renderer);
+
         if(playerWon(listePieces)){
             quit = 1;
             SDL_Surface * imageYouWon = SDL_LoadBMP("images/you_won.bmp");
