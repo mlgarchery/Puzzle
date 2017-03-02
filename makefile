@@ -3,15 +3,15 @@ CC= gcc -std=c99 -Wall -Wextra
 INCLUDE= `sdl2-config --cflags`
 LIBS= `sdl2-config --libs` -lm
 
-all: main.o
-	$(CC) -o puzzle main.o $(LIBS)
+all: main.o fonctionPuzzle.o
+	$(CC) -o puzzle main.o fonctionPuzzle.o $(LIBS)
 	make clean
 
-main.o: main.c
+main.o: main.c fonctionPuzzle.h
 	$(CC) $(INCLUDE) -c main.c
 
-sprite.o: sprite.h sprite.c
-	$(CC) $(INCLUDE) -c sprite.c
+fonctionPuzzle.o : fonctionPuzzle.h fonctionPuzzle.c
+	$(CC) $(INCLUDE) -c fonctionPuzzle.c 
 
 clean: .
 	rm *.o
