@@ -1,8 +1,10 @@
 #Slardar
 
-UTILE:
-touche Echap pour quitter le puzzle
+UTILE  
+Echap:	quitter le puzzle  
+clic gauche:	selectionner/déposer une pièce.  
+clic droit:	appliquer une rotation de 90° à la pièce.  
 
-
-JEU:
-L'image est découpée en 16 pièce de 100*100 pixels. Essayez de trouver la disposition initiale.
+JEU  
+L'image est découpée en 16 pièces que l'on a mélangées.
+Essayez de trouver sa disposition initiale.
