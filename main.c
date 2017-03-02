@@ -162,7 +162,7 @@ int main()
     }
 
     // On charge l'image
-    SDL_Surface * image = SDL_LoadBMP("images/0/slardar.bmp");
+    SDL_Surface * image = SDL_LoadBMP("images/slardar.bmp");
     if (image == NULL){
         printf( "SDL_LoadBMP Error: %s\n", SDL_GetError() );
         SDL_DestroyWindow(window);
