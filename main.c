@@ -268,9 +268,6 @@ int main()
 
                                     }else if(isInGrille && isCaseUsed(&new_rect, listePieces) != -1){
                                         // On échange la position des deux pièces
-                                        printf("%d \n", isCaseUsed(&new_rect, listePieces) );
-                                        printf("%d \n", pieceSelected );
-                                        
                                         switchScreenRect(&listePieces[isCaseUsed(&new_rect, listePieces)], 
                                                          &listePieces[pieceSelected]);
 
