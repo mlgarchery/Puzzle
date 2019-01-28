@@ -236,16 +236,16 @@ int main()
 
         if(playerWon(listePieces)){
             quit = 1;
-            SDL_Surface * imageYouWon = SDL_LoadBMP("images/you_won.bmp");
-            SDL_Texture * textureWon = SDL_CreateTextureFromSurface(renderer, imageYouWon);
-            SDL_RenderCopy(renderer, textureWon, NULL, &grilleGauche);
-            SDL_RenderPresent(renderer); 
         }
         SDL_RenderPresent(renderer);    
     }
 
     if(playerWon(listePieces)){
         // laisser au joueur le temps d'aprécier sa victoire
+		SDL_Surface * imageYouWon = SDL_LoadBMP("images/you_won.bmp");
+		SDL_Texture * textureWon = SDL_CreateTextureFromSurface(renderer, imageYouWon);
+		SDL_RenderCopy(renderer, textureWon, NULL, &grilleGauche);
+		SDL_RenderPresent(renderer); 
         SDL_Delay(8000);
     }
 

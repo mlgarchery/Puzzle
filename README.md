@@ -1,4 +1,16 @@
-#Slardar
+# Installation
+
+Installer SDL2, la librairie graphique 2D.
+
+```bash
+sudo apt install libsdl2-dev
+```
+puis
+
+```bash
+make
+```
+
 
 UTILE  
 Echap:	quitter le puzzle  
